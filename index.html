@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Decision Tree Learning & Instance-Based Learning — Complete Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#4f46e5; --indigo-light:#eef2ff; --indigo-dark:#3730a3;
+  --purple:#9333ea; --purple-light:#f5f0fe; --purple-dark:#6b21a8;
+  --teal:#0d9488; --teal-light:#ecfdf9;
+  --amber:#d97706; --amber-light:#fffbeb;
+  --rose:#e11d48; --rose-light:#fff1f2;
+  --green:#16a34a; --green-light:#f0fdf4;
+  --ink:#1e2433; --muted:#5b6478;
+  --bg:#eef1f8; --card:#ffffff;
+  --code-bg:#1e293b;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter', sans-serif; line-height:1.65;
+}
+.page{max-width:980px; margin:0 auto; padding:0 18px 60px;}
+
+/* ---------- HERO ---------- */
+.hero{
+  background:linear-gradient(120deg,var(--indigo) 0%, #7c3aed 55%, var(--purple) 100%);
+  color:#fff; padding:46px 36px; border-radius:0 0 28px 28px;
+  margin:0 -18px 26px; position:relative; overflow:hidden;
+}
+.hero::after{
+  content:""; position:absolute; right:-60px; top:-60px; width:260px; height:260px;
+  background:rgba(255,255,255,0.08); border-radius:50%;
+}
+.hero h1{
+  font-family:'Sora',sans-serif; font-size:34px; margin:0 0 8px; font-weight:800;
+  letter-spacing:-0.5px;
+}
+.hero p.lead{margin:0; font-size:16.5px; opacity:0.92; max-width:640px;}
+.hero .pill-row{margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;}
+.pill{
+  background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.35);
+  padding:6px 14px; border-radius:999px; font-size:13.5px; font-weight:500;
+}
+
+/* ---------- TOC ---------- */
+.toc{
+  background:var(--card); border-radius:16px; padding:22px 26px; margin:0 0 30px;
+  box-shadow:0 1px 3px rgba(20,20,50,0.08); border:1px solid #e4e8f4;
+}
+.toc h2{font-family:'Sora',sans-serif; font-size:20px; margin:0 0 12px; color:var(--indigo-dark);}
+.toc-grid{display:grid; grid-template-columns:1fr 1fr; gap:4px 30px;}
+.toc-grid .grp-title{font-weight:700; color:var(--purple-dark); margin:10px 0 4px; font-size:14.5px;}
+.toc a{color:var(--ink); text-decoration:none; font-size:14.5px; display:block; padding:3px 0;}
+.toc a:hover{color:var(--indigo);}
+@media(max-width:640px){.toc-grid{grid-template-columns:1fr;}}
+
+/* ---------- PART BANNER ---------- */
+.part-banner{
+  border-radius:16px; padding:20px 28px; margin:44px 0 22px;
+  font-family:'Sora',sans-serif; font-weight:800; font-size:24px; color:#fff;
+  display:flex; align-items:center; gap:14px;
+}
+.part-banner.dt{background:linear-gradient(100deg,var(--indigo),#6366f1);}
+.part-banner.ibl{background:linear-gradient(100deg,var(--purple),#c026d3);}
+.part-banner .badge{
+  background:rgba(255,255,255,0.22); border-radius:10px; padding:6px 12px; font-size:14px;
+}
+
+/* ---------- SECTION HEADERS ---------- */
+h2.topic{
+  font-family:'Sora',sans-serif; font-size:23px; margin:38px 0 12px;
+  padding-left:14px; border-left:6px solid var(--indigo);
+  color:var(--indigo-dark);
+}
+.ibl h2.topic{border-left-color:var(--purple); color:var(--purple-dark);}
+h3.sub{
+  font-family:'Sora',sans-serif; font-size:18px; margin:22px 0 8px; color:var(--teal);
+}
+h4.subsub{font-family:'Sora',sans-serif; font-size:15.5px; margin:16px 0 6px; color:var(--ink);}
+
+p{margin:8px 0; color:#374056; font-size:15.3px;}
+ul,ol{margin:8px 0; padding-left:24px;}
+li{margin-bottom:5px; font-size:15.3px; color:#374056;}
+li::marker{color:var(--indigo); font-weight:700;}
+.ibl li::marker{color:var(--purple);}
+strong,b{color:var(--ink);}
+
+/* ---------- BOXES ---------- */
+.box{border-radius:12px; padding:14px 18px; margin:14px 0; position:relative; border:1.5px solid; font-size:15px;}
+.box .tag{font-family:'Sora',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; display:block;}
+.box.def{background:var(--indigo-light); border-color:#c7d2fe;} .box.def .tag{color:var(--indigo-dark);}
+.box.note{background:var(--teal-light); border-color:#99f6e4;} .box.note .tag{color:#0f766e;}
+.box.warn{background:var(--amber-light); border-color:#fde68a;} .box.warn .tag{color:var(--amber);}
+.box.tip{background:var(--rose-light); border-color:#fecdd3;} .box.tip .tag{color:var(--rose);}
+.box.interview{background:#f0fdf4; border-color:#bbf7d0;} .box.interview .tag{color:var(--green);}
+
+/* ---------- FORMULA ---------- */
+.formula{
+  background:var(--code-bg); color:#e2e8f0; border-radius:10px; padding:14px 18px;
+  margin:12px 0; font-family:'Fira Code',monospace; font-size:14.5px; line-height:1.8;
+  overflow-x:auto;
+}
+.formula .key{color:#7dd3fc;}
+.formula .op{color:#fbbf24;}
+
+/* ---------- NUMERICAL ---------- */
+.numerical{
+  border-radius:14px; margin:18px 0; overflow:hidden; border:1.5px solid #bbf7d0;
+  box-shadow:0 1px 4px rgba(20,20,50,0.06);
+}
+.numerical .num-head{
+  background:linear-gradient(95deg,var(--green),#22c55e); color:#fff; padding:10px 18px;
+  font-family:'Sora',sans-serif; font-weight:700; font-size:15.5px;
+}
+.numerical .num-body{background:#fbfffc; padding:14px 20px;}
+.step{margin:10px 0; padding-left:14px; border-left:3px solid #86efac;}
+.step .step-title{font-weight:700; color:var(--green); font-size:14.5px; margin-bottom:3px;}
+.result-box{
+  background:#dcfce7; border:1.5px dashed var(--green); border-radius:10px; padding:10px 16px;
+  margin-top:10px; font-weight:700; color:#14532d;
+}
+
+/* ---------- TABLES ---------- */
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px; background:#fff;}
+th,td{border:1px solid #dbe1f0; padding:7px 10px; text-align:center;}
+th{background:var(--indigo-light); color:var(--indigo-dark); font-family:'Sora',sans-serif; font-size:13.5px;}
+.ibl th{background:var(--purple-light); color:var(--purple-dark);}
+tr:nth-child(even) td{background:#f8fafc;}
+td.left, th.left{text-align:left;}
+
+/* ---------- PSEUDOCODE ---------- */
+.pseudocode{
+  background:var(--code-bg); color:#d1d5db; border-radius:12px; padding:18px 22px;
+  font-family:'Fira Code',monospace; font-size:13.5px; line-height:1.85; margin:14px 0;
+  overflow-x:auto;
+}
+.pseudocode .kw{color:#f472b6; font-weight:600;}
+.pseudocode .cm{color:#94a3b8; font-style:italic;}
+.pseudocode .fn{color:#7dd3fc;}
+
+/* ---------- COMPARE CARDS ---------- */
+.compare{display:flex; gap:16px; flex-wrap:wrap; margin:14px 0;}
+.compare .cc{flex:1 1 220px; border-radius:12px; padding:14px 18px; border:1.5px solid #e4e8f4; background:#fff;}
+.compare .cc h4{margin:0 0 8px; font-family:'Sora',sans-serif; font-size:15px;}
+
+/* ---------- DIAGRAM CARD ---------- */
+.diagram-card{background:#fff; border:1.5px solid #e4e8f4; border-radius:14px; padding:16px; margin:16px 0; text-align:center;}
+.caption{font-size:13px; color:var(--muted); margin-top:6px;}
+
+/* interview list */
+.faq{background:#fff; border-radius:14px; border:1.5px solid #e4e8f4; padding:6px 22px; margin:12px 0;}
+.faq .q{font-family:'Sora',sans-serif; font-weight:700; color:var(--indigo-dark); margin-top:14px; font-size:15px;}
+.ibl .faq .q{color:var(--purple-dark);}
+.faq .a{margin:4px 0 10px; font-size:14.5px; color:#374056;}
+
+.divider{height:2px; background:linear-gradient(90deg,transparent, #cbd5f5, transparent); margin:34px 0;}
+.footer-note{text-align:center; color:var(--muted); font-size:13.5px; margin-top:50px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <h1>Decision Tree Learning &amp; Instance-Based Learning</h1>
+    <p class="lead">Complete B.Tech notes — beginner to advanced — with formulas, pseudocode, colour-coded concept boxes, step-by-step solved numericals, and interview Q&amp;A for every topic.</p>
+    <div class="pill-row">
+      <span class="pill">📘 ID3 Algorithm</span>
+      <span class="pill">🧮 Entropy &amp; Information Gain</span>
+      <span class="pill">📍 k-NN</span>
+      <span class="pill">📈 Locally Weighted Regression</span>
+      <span class="pill">🧠 RBF Networks</span>
+      <span class="pill">🗂️ Case-Based Learning</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h2>📑 Contents</h2>
+    <div class="toc-grid">
+      <div>
+        <div class="grp-title">PART A — Decision Tree Learning</div>
+        <a href="#a1">A1. Decision Tree Learning Algorithm</a>
+        <a href="#a2">A2. Inductive Bias</a>
+        <a href="#a3">A3. Inductive Inference with Decision Trees</a>
+        <a href="#a4">A4. Entropy &amp; Information Theory (+2 numericals)</a>
+        <a href="#a5">A5. Information Gain (+2 numericals)</a>
+        <a href="#a6">A6. ID3 Algorithm (+2 numericals)</a>
+        <a href="#a7">A7. Issues in Decision Tree Learning</a>
+        <a href="#a8">A8. Interview Questions — Decision Trees</a>
+      </div>
+      <div>
+        <div class="grp-title">PART B — Instance-Based Learning</div>
+        <a href="#b0">B0. What is Instance-Based Learning?</a>
+        <a href="#b1">B1. k-Nearest Neighbour Learning (+2 numericals)</a>
+        <a href="#b2">B2. Locally Weighted Regression (+2 numericals)</a>
+        <a href="#b3">B3. Radial Basis Function Networks (+2 numericals)</a>
+        <a href="#b4">B4. Case-Based Learning</a>
+        <a href="#b5">B5. Interview Questions — Instance-Based Learning</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PART A : DECISION TREE LEARNING                               -->
+  <!-- ============================================================ -->
+  <div class="part-banner dt"><span>🌳</span> PART A — Decision Tree Learning <span class="badge">Concept-based</span></div>
+
+  <h2 class="topic" id="a1">A1. Decision Tree Learning Algorithm</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  A decision tree is a supervised learning method that approximates discrete-valued target functions, where the learned function is represented as a tree. It classifies an instance by sorting it down the tree from the root to a leaf, which provides the classification.
+  </div>
+  <ul>
+    <li>Each <b>internal (decision) node</b> tests one attribute of the instance.</li>
+    <li>Each <b>branch</b> from a node corresponds to one possible value of that attribute.</li>
+    <li>Each <b>leaf node</b> assigns a class label (the output).</li>
+    <li>A path from root to leaf = one conjunctive rule; the whole tree = a <b>disjunction of conjunctions</b> of attribute tests, so decision trees can represent any Boolean function.</li>
+  </ul>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;">
+      <rect x="230" y="10" width="100" height="36" rx="8" fill="#4f46e5"/>
+      <text x="280" y="33" text-anchor="middle" fill="#fff" font-family="Sora" font-size="14">Outlook</text>
+      <line x1="260" y1="46" x2="90" y2="90" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="280" y1="46" x2="280" y2="90" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="300" y1="46" x2="470" y2="90" stroke="#94a3b8" stroke-width="2"/>
+      <text x="150" y="72" font-family="Inter" font-size="12" fill="#5b6478">Sunny</text>
+      <text x="290" y="72" font-family="Inter" font-size="12" fill="#5b6478">Overcast</text>
+      <text x="400" y="72" font-family="Inter" font-size="12" fill="#5b6478">Rain</text>
+      <rect x="40" y="92" width="110" height="34" rx="8" fill="#9333ea"/>
+      <text x="95" y="113" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">Humidity</text>
+      <rect x="240" y="92" width="80" height="34" rx="8" fill="#16a34a"/>
+      <text x="280" y="113" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">Yes</text>
+      <rect x="410" y="92" width="90" height="34" rx="8" fill="#9333ea"/>
+      <text x="455" y="113" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">Wind</text>
+      <line x1="70" y1="126" x2="30" y2="168" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="120" y1="126" x2="160" y2="168" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="435" y1="126" x2="400" y2="168" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="475" y1="126" x2="510" y2="168" stroke="#94a3b8" stroke-width="2"/>
+      <rect x="0" y="170" width="70" height="32" rx="8" fill="#e11d48"/>
+      <text x="35" y="190" text-anchor="middle" fill="#fff" font-family="Sora" font-size="12">No</text>
+      <rect x="130" y="170" width="70" height="32" rx="8" fill="#16a34a"/>
+      <text x="165" y="190" text-anchor="middle" fill="#fff" font-family="Sora" font-size="12">Yes</text>
+      <rect x="365" y="170" width="70" height="32" rx="8" fill="#16a34a"/>
+      <text x="400" y="190" text-anchor="middle" fill="#fff" font-family="Sora" font-size="12">Yes</text>
+      <rect x="475" y="170" width="70" height="32" rx="8" fill="#e11d48"/>
+      <text x="510" y="190" text-anchor="middle" fill="#fff" font-family="Sora" font-size="12">No</text>
+    </svg>
+    <div class="caption">Fig A1.1 — A learned decision tree for the classic "Play Tennis" problem (used later in the numericals).</div>
+  </div>
+
+  <h3 class="sub">General top-down induction approach (used by ID3, C4.5, CART)</h3>
+  <ol>
+    <li>Start with all training examples at the root.</li>
+    <li>Select the <b>best attribute</b> to split on (using a selection measure — info gain / gain ratio / Gini index).</li>
+    <li>Partition examples into subsets, one per attribute value.</li>
+    <li>Recurse on each subset, treating it as a new (smaller) tree-building problem.</li>
+    <li>Stop when a node is pure (all examples same class), attributes are exhausted, or a stopping criterion is met.</li>
+  </ol>
+  <div class="box interview"><span class="tag">Interview angle</span>
+  This is called <b>greedy, recursive, top-down, divide-and-conquer</b> search — four keywords examiners love asking about individually.
+  </div>
+
+  <h2 class="topic" id="a2">A2. Inductive Bias</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  Inductive bias is the set of assumptions that, together with the training data, a learner uses to deductively justify the classifications it assigns to unseen future instances. Without some bias, a learner cannot generalise beyond the exact training examples it has seen.
+  </div>
+  <h3 class="sub">Two types of bias (a favourite interview distinction)</h3>
+  <table>
+    <tr><th class="left">Type</th><th class="left">Meaning</th><th class="left">Example</th></tr>
+    <tr><td class="left"><b>Restriction bias</b></td><td class="left">Restricts the <b>hypothesis space</b> itself — only certain hypotheses can even be represented</td><td class="left">Candidate-Elimination: only conjunctive hypotheses allowed</td></tr>
+    <tr><td class="left"><b>Preference bias</b> (search bias)</td><td class="left">Hypothesis space is complete, but the search <b>prefers</b> some hypotheses over others</td><td class="left">ID3: prefers shorter trees found earlier by the greedy search</td></tr>
+  </table>
+
+  <div class="box note"><span class="tag">ID3's approximate inductive bias</span>
+  "Shorter trees are preferred over larger trees. Trees that place high-information-gain attributes closer to the root are preferred over those that do not."<br>
+  This is close to (but not identical to) <b>Occam's Razor</b>: "prefer the simplest hypothesis that fits the data."
+  </div>
+  <ul>
+    <li>ID3's hypothesis space (all possible decision trees) is <b>complete</b> relative to discrete-valued target functions — every finite discrete function can be represented by some tree.</li>
+    <li>So ID3 has (almost) <b>no restriction bias</b> — its bias is purely a <b>preference bias</b> coming from the order in which its greedy search explores hypotheses.</li>
+  </ul>
+
+  <h2 class="topic" id="a3">A3. Inductive Inference with Decision Trees</h2>
+  <ul>
+    <li><b>Inductive inference</b> = generalising from a finite set of observed (specific) training examples to a general hypothesis that will hold on future, unseen examples.</li>
+    <li>ID3 can be viewed as searching a <b>hypothesis space</b> H (the space of all possible decision trees) for the hypothesis that best fits the training examples.</li>
+  </ul>
+
+  <div class="compare">
+    <div class="cc">
+      <h4>🌳 ID3 (decision trees)</h4>
+      Hypothesis space: <b>complete</b> (can express any discrete function)<br>
+      Search: <b>incomplete</b> — greedy hill-climbing, no backtracking, single current hypothesis maintained
+    </div>
+    <div class="cc">
+      <h4>🔲 Candidate-Elimination</h4>
+      Hypothesis space: <b>incomplete</b> (restricted to conjunctions)<br>
+      Search: <b>complete</b> — maintains the full version space, considers every consistent hypothesis
+    </div>
+  </div>
+  <div class="box tip"><span class="tag">Consequence</span>
+  Because ID3's search is incomplete (greedy), it is not guaranteed to find the globally best (simplest / highest-gain) tree — it can get stuck in a locally good but globally sub-optimal tree. This is exactly why <b>pruning</b> (Section A7) is required afterwards.
+  </div>
+
+  <h2 class="topic" id="a4">A4. Entropy and Information Theory</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  Entropy characterises the (im)purity/disorder of an arbitrary collection of examples. It tells us the minimum number of bits needed to encode the classification of an arbitrarily drawn member of the set S.
+  </div>
+  <div class="formula">
+  <span class="key">Entropy(S)</span> <span class="op">=</span> Σ<sub>i=1</sub><sup>c</sup> −p<sub>i</sub> log<sub>2</sub>(p<sub>i</sub>)
+  </div>
+  <p>where <b>c</b> = number of distinct classes, and <b>p<sub>i</sub></b> = proportion of examples in S belonging to class <i>i</i>.</p>
+  <ul>
+    <li>Entropy = <b>0</b> when S is perfectly pure (all examples one class).</li>
+    <li>Entropy = <b>1</b> (maximum, for binary classification) when S is perfectly mixed (50–50 split).</li>
+    <li>For c classes, entropy ranges between 0 and log<sub>2</sub>(c).</li>
+    <li>Entropy is derived from information theory — it is the expected number of bits needed to encode the class of a randomly drawn example, using the optimal, shortest code based on the probability distribution of classes.</li>
+  </ul>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;">
+      <polyline points="20,160 20,20" stroke="#94a3b8" stroke-width="2"/>
+      <polyline points="20,160 380,160" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M20,160 Q100,10 200,10 Q300,10 380,160" fill="none" stroke="#4f46e5" stroke-width="3"/>
+      <text x="190" y="12" font-family="Inter" font-size="11" fill="#4f46e5" text-anchor="middle">Entropy = 1 (max)</text>
+      <text x="10" y="175" font-family="Inter" font-size="11" fill="#5b6478">p=0</text>
+      <text x="360" y="175" font-family="Inter" font-size="11" fill="#5b6478">p=1</text>
+      <text x="185" y="175" font-family="Inter" font-size="11" fill="#5b6478">p=0.5</text>
+    </svg>
+    <div class="caption">Fig A4.1 — Entropy vs. proportion p of positive examples (binary case): a peak of 1 at p = 0.5, zero at the pure ends.</div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Entropy of the root set (Play-Tennis dataset, 14 examples, 9 Yes / 5 No)</div>
+    <div class="num-body">
+      <div class="step"><div class="step-title">Step 1: Identify proportions</div>p(Yes) = 9/14 = 0.643 &nbsp;&nbsp; p(No) = 5/14 = 0.357</div>
+      <div class="step"><div class="step-title">Step 2: Apply the entropy formula</div>
+      Entropy(S) = −(9/14)log<sub>2</sub>(9/14) − (5/14)log<sub>2</sub>(5/14)</div>
+      <div class="step"><div class="step-title">Step 3: Compute each term</div>
+      −0.643 × log<sub>2</sub>(0.643) = −0.643 × (−0.637) = 0.410<br>
+      −0.357 × log<sub>2</sub>(0.357) = −0.357 × (−1.486) = 0.531</div>
+      <div class="result-box">Entropy(S) = 0.410 + 0.531 = <b>0.940 bits</b> — close to maximum (1), so the set is fairly mixed.</div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — Entropy of a subset after partial split (a 3-class example)</div>
+    <div class="num-body">
+      <p>A node contains 10 examples of a 3-class target: 5 "Leader", 3 "Speaker", 2 "Intel".</p>
+      <div class="step"><div class="step-title">Step 1: Proportions</div>p1=5/10=0.5, p2=3/10=0.3, p3=2/10=0.2</div>
+      <div class="step"><div class="step-title">Step 2: Compute each term</div>
+      −0.5×log<sub>2</sub>(0.5) = 0.5<br>
+      −0.3×log<sub>2</sub>(0.3) = −0.3×(−1.737) = 0.521<br>
+      −0.2×log<sub>2</sub>(0.2) = −0.2×(−2.322) = 0.464</div>
+      <div class="result-box">Entropy = 0.5 + 0.521 + 0.464 = <b>1.485 bits</b> (upper bound here is log₂3 = 1.585, so this node is highly mixed).</div>
+    </div>
+  </div>
+
+  <h2 class="topic" id="a5">A5. Information Gain</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  Information Gain measures the expected reduction in entropy caused by partitioning the examples according to a given attribute A. ID3 picks, at every node, the attribute with the <b>highest</b> information gain.
+  </div>
+  <div class="formula">
+  <span class="key">Gain(S, A)</span> <span class="op">=</span> Entropy(S) − Σ<sub>v∈Values(A)</sub> (|S<sub>v</sub>| / |S|) × Entropy(S<sub>v</sub>)
+  </div>
+  <p>Values(A) = the set of all possible values of attribute A; S<sub>v</sub> = subset of S for which A has value v.</p>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Gain(S, Outlook) on Play-Tennis dataset</div>
+    <div class="num-body">
+      <p>Split by <b>Outlook</b>: Sunny (5, 2 Yes/3 No), Overcast (4, 4 Yes/0 No), Rain (5, 3 Yes/2 No).</p>
+      <div class="step"><div class="step-title">Step 1: Entropy of each branch</div>
+      Entropy(Sunny) = −(2/5)log₂(2/5) − (3/5)log₂(3/5) = 0.529+0.442 = <b>0.971</b><br>
+      Entropy(Overcast) = 0 (pure, all Yes)<br>
+      Entropy(Rain) = same computation as Sunny (3 Yes/2 No) = <b>0.971</b></div>
+      <div class="step"><div class="step-title">Step 2: Weighted entropy after split</div>
+      (5/14)(0.971) + (4/14)(0) + (5/14)(0.971) = 0.347 + 0 + 0.347 = 0.694</div>
+      <div class="step"><div class="step-title">Step 3: Apply Gain formula</div>Gain(S,Outlook) = 0.940 − 0.694</div>
+      <div class="result-box">Gain(S, Outlook) = <b>0.246 bits</b></div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — Gain(S, Wind) on the same dataset (compare against Outlook)</div>
+    <div class="num-body">
+      <p>Split by <b>Wind</b>: Weak (8, 6 Yes/2 No), Strong (6, 3 Yes/3 No).</p>
+      <div class="step"><div class="step-title">Step 1: Entropy of each branch</div>
+      Entropy(Weak) = −(6/8)log₂(6/8) − (2/8)log₂(2/8) = 0.311+0.5 = <b>0.811</b><br>
+      Entropy(Strong) = 3 Yes / 3 No → perfectly mixed → <b>1.0</b></div>
+      <div class="step"><div class="step-title">Step 2: Weighted entropy after split</div>
+      (8/14)(0.811) + (6/14)(1.0) = 0.463 + 0.429 = 0.892</div>
+      <div class="step"><div class="step-title">Step 3: Apply Gain formula</div>Gain(S,Wind) = 0.940 − 0.892</div>
+      <div class="result-box">Gain(S, Wind) = <b>0.048 bits</b> — much lower than Outlook's 0.246, so Outlook is preferred at the root.</div>
+    </div>
+  </div>
+
+  <div class="box interview"><span class="tag">Interview angle</span>
+  Info gain is <b>biased towards attributes with many distinct values</b> (e.g. a "Date" or "ID" attribute would give perfect but useless splits). This exact weakness motivates <b>Gain Ratio</b> — see Section A7.
+  </div>
+
+  <h2 class="topic" id="a6">A6. ID3 Algorithm</h2>
+  <p>ID3 (<b>Iterative Dichotomiser 3</b>, Quinlan 1986) is the classic greedy, top-down algorithm that builds a decision tree by recursively choosing the attribute with the highest information gain.</p>
+  <div class="pseudocode">
+<span class="kw">function</span> <span class="fn">ID3</span>(Examples, Target_attribute, Attributes):
+  Create a Root node for the tree
+  <span class="kw">if</span> all Examples are positive: <span class="kw">return</span> Root labelled "+"
+  <span class="kw">if</span> all Examples are negative: <span class="kw">return</span> Root labelled "−"
+  <span class="kw">if</span> Attributes is empty:
+      <span class="kw">return</span> Root labelled with most common Target value in Examples
+  <span class="kw">else</span>:
+      A ← the attribute from Attributes with <span class="kw">highest</span> Gain(Examples, A)
+      Root's decision attribute ← A
+      <span class="kw">for each</span> possible value v<sub>i</sub> of A:
+          add a new branch below Root for A = v<sub>i</sub>
+          Examples_vi ← subset of Examples where A = v<sub>i</sub>
+          <span class="kw">if</span> Examples_vi is empty:
+              add leaf labelled with most common Target value in Examples
+          <span class="kw">else</span>:
+              add subtree <span class="fn">ID3</span>(Examples_vi, Target_attribute, Attributes − {A})
+  <span class="kw">return</span> Root
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Building the complete tree for the Play-Tennis dataset</div>
+    <div class="num-body">
+      <div class="step"><div class="step-title">Step 1: Root split</div>From A5, Gain(Outlook)=0.246 is the highest among Outlook/Wind/Humidity/Temperature → <b>root = Outlook</b>.</div>
+      <div class="step"><div class="step-title">Step 2: Overcast branch</div>All 4 examples are "Yes" → entropy 0 → becomes a <b>leaf = Yes</b> directly (no further split needed).</div>
+      <div class="step"><div class="step-title">Step 3: Sunny branch (5 examples, 2 Yes/3 No)</div>Compute gain of remaining attributes within this subset. Gain(Humidity) turns out highest (=0.971, a perfect split) — Humidity=High → all No; Humidity=Normal → all Yes. Both become pure <b>leaves</b>.</div>
+      <div class="step"><div class="step-title">Step 4: Rain branch (5 examples, 3 Yes/2 No)</div>Gain(Wind) is highest here — Wind=Weak → all Yes; Wind=Strong → all No. Both become pure <b>leaves</b>.</div>
+      <div class="result-box">Final Tree: <b>Outlook</b> → {Sunny→<b>Humidity</b>→{High:No, Normal:Yes}; Overcast→<b>Yes</b>; Rain→<b>Wind</b>→{Weak:Yes, Strong:No}} — exactly Fig A1.1 above!</div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — Small "Loan Approval" dataset (8 examples, 2 attributes) — full trace incl. a tie</div>
+    <div class="num-body">
+      <table>
+        <tr><th>#</th><th>Income</th><th>CreditScore</th><th>Loan?</th></tr>
+        <tr><td>1</td><td>High</td><td>Good</td><td>Yes</td></tr>
+        <tr><td>2</td><td>High</td><td>Bad</td><td>Yes</td></tr>
+        <tr><td>3</td><td>Low</td><td>Good</td><td>Yes</td></tr>
+        <tr><td>4</td><td>Low</td><td>Bad</td><td>No</td></tr>
+        <tr><td>5</td><td>High</td><td>Good</td><td>Yes</td></tr>
+        <tr><td>6</td><td>Low</td><td>Bad</td><td>No</td></tr>
+        <tr><td>7</td><td>High</td><td>Bad</td><td>No</td></tr>
+        <tr><td>8</td><td>Low</td><td>Good</td><td>Yes</td></tr>
+      </table>
+      <div class="step"><div class="step-title">Step 1: Root entropy</div>5 Yes, 3 No, 8 total → Entropy(S) = −(5/8)log₂(5/8)−(3/8)log₂(3/8) = 0.424+0.531 = <b>0.954</b></div>
+      <div class="step"><div class="step-title">Step 2: Gain(Income)</div>High(4): 3Yes/1No→E=0.811; Low(4): 2Yes/2No→E=1.0<br>
+      Weighted = 0.5(0.811)+0.5(1.0)=0.906 → Gain = 0.954−0.906 = <b>0.048</b></div>
+      <div class="step"><div class="step-title">Step 3: Gain(CreditScore)</div>Good(4): all Yes→E=0; Bad(4): 1Yes/3No→E=0.811<br>
+      Weighted = 0.5(0)+0.5(0.811)=0.406 → Gain = 0.954−0.406 = <b>0.548</b> ⇒ <b>chosen as root</b> (much higher gain)</div>
+      <div class="step"><div class="step-title">Step 4: Branch CreditScore=Good</div>All 4 are Yes → pure <b>leaf = Yes</b>.</div>
+      <div class="step"><div class="step-title">Step 5: Branch CreditScore=Bad (rows 2,4,6,7) — split on remaining attribute Income</div>Income=High (rows 2,7): 1 Yes/1 No → tied, entropy=1, <b>no attributes left</b> ⇒ assign majority class of parent set (Yes) — a real <b>ID3 tie-breaking</b> case!<br>
+      Income=Low (rows 4,6): both No → pure <b>leaf = No</b>.</div>
+      <div class="result-box">Final Tree: <b>CreditScore</b> → {Good: Yes; Bad → <b>Income</b> → {High: Yes (tie, majority rule), Low: No}}</div>
+    </div>
+  </div>
+
+  <h2 class="topic" id="a7">A7. Issues in Decision Tree Learning</h2>
+
+  <h3 class="sub">1. Overfitting the data</h3>
+  <div class="box warn"><span class="tag">Problem</span>
+  A hypothesis h <b>overfits</b> the training data if some alternative h′ has more training error but less true (test) error. Decision trees can grow branches to fit noise or outliers, hurting generalisation.
+  </div>
+  <ul><li>Caused by: noisy training data, or too few examples resulting in coincidental regularities.</li></ul>
+
+  <h3 class="sub">2. Approaches to avoid overfitting</h3>
+  <div class="compare">
+    <div class="cc"><h4>✂️ Pre-pruning</h4>Stop growing the tree earlier, before it perfectly classifies training data (e.g. stop if a node has too few examples, or gain is below a threshold).</div>
+    <div class="cc"><h4>🌲 Post-pruning</h4>Grow the full tree first, then prune back nodes that do not improve accuracy on a held-out <b>validation set</b>. Generally works <b>better</b> in practice than pre-pruning.</div>
+  </div>
+  <p><b>Deciding correct final tree size</b> uses one of:</p>
+  <ul>
+    <li>Use a separate <b>validation set</b> to evaluate the effect of pruning.</li>
+    <li>Apply a <b>statistical test</b> (e.g. chi-square) to check whether a split is statistically significant.</li>
+    <li>Use an explicit measure of complexity like <b>MDL (Minimum Description Length)</b> — minimise size(tree)+size(misclassifications).</li>
+  </ul>
+
+  <h4 class="subsub">Reduced-Error Pruning</h4>
+  <ul>
+    <li>Consider each decision node as a candidate for pruning.</li>
+    <li>Pruning = removing the subtree rooted at that node, making it a leaf with the majority class.</li>
+    <li>Remove the node only if the resulting (pruned) tree performs no worse on the validation set than the original.</li>
+    <li>Repeat, always greedily removing the node whose removal most improves validation accuracy, until further pruning is harmful.</li>
+  </ul>
+
+  <h4 class="subsub">Rule Post-Pruning (used in C4.5) — most widely used in practice</h4>
+  <ol>
+    <li>Grow the tree fully (allow overfitting).</li>
+    <li>Convert the tree into an equivalent set of <b>rules</b> — one rule per root-to-leaf path.</li>
+    <li>Prune each rule independently by removing preconditions that do not reduce estimated accuracy.</li>
+    <li>Sort the pruned rules by estimated accuracy, and apply them in that order at classification time.</li>
+  </ol>
+  <div class="box tip"><span class="tag">Why convert to rules first?</span>
+  It lets each path be pruned independently (a condition can be dropped from one rule without affecting sibling branches), gives more fine-grained pruning, and rules are far more human-readable than a tree — good for interviews!
+  </div>
+
+  <h3 class="sub">3. Incorporating continuous-valued attributes</h3>
+  <ul>
+    <li>ID3 originally handles only discrete attributes. For a continuous attribute A, create a <b>Boolean test</b> "A &lt; threshold c" (dynamic discretization).</li>
+    <li>Best threshold: sort examples by A; consider candidate thresholds midway between consecutive examples whose class labels <b>differ</b>; evaluate information gain for each candidate; pick the best.</li>
+  </ul>
+
+  <h3 class="sub">4. Alternative attribute-selection measures — Gain Ratio</h3>
+  <div class="box warn"><span class="tag">Problem with plain Information Gain</span>
+  Gain is biased toward attributes with many values (e.g. "Date"), which can produce many small, pure — but useless — subsets, leading to overfitting.
+  </div>
+  <div class="formula">
+  <span class="key">GainRatio(S, A)</span> <span class="op">=</span> Gain(S, A) / SplitInformation(S, A)<br>
+  SplitInformation(S, A) = −Σ<sub>i</sub> (|S<sub>i</sub>|/|S|) log<sub>2</sub>(|S<sub>i</sub>|/|S|)
+  </div>
+  <p>SplitInformation penalises attributes that split S into many small subsets — used in <b>C4.5</b> instead of plain Gain.</p>
+
+  <h3 class="sub">5. Handling training examples with missing attribute values</h3>
+  <ul>
+    <li>Assign the <b>most common value</b> of that attribute at that node.</li>
+    <li>Or assign the most common value <b>among examples with the same target class</b> at that node.</li>
+    <li>Or (more sophisticated) assign a <b>probability</b> to each possible value and distribute the example fractionally across all branches — used by C4.5.</li>
+  </ul>
+
+  <h3 class="sub">6. Handling attributes with differing costs</h3>
+  <ul>
+    <li>In some domains (e.g. medical diagnosis), attributes have different costs (e.g. a blood test costs more than checking temperature).</li>
+    <li>Bias the attribute selection to favour low-cost attributes wherever possible — e.g. divide Gain by Cost, or use Gain²/Cost (Tan &amp; Schlimmer), or (2<sup>Gain</sup>−1)/(Cost+1)<sup>w</sup> (Nunez).</li>
+  </ul>
+
+  <div class="box interview"><span class="tag">Interview angle — most-asked issue</span>
+  If asked "what is the single biggest practical issue with decision trees?" → <b>Overfitting</b>, solved via pruning, is almost always the expected top answer.
+  </div>
+
+  <h2 class="topic" id="a8">A8. Interview Questions — Decision Trees</h2>
+  <div class="faq">
+    <div class="q">Q1. Why does ID3 prefer attributes with higher information gain?</div>
+    <div class="a">Because higher gain means a bigger reduction in entropy/uncertainty — the resulting subsets are purer, so fewer additional splits (and less depth) are needed to classify examples, giving a shorter, simpler tree — matching ID3's inductive bias.</div>
+    <div class="q">Q2. What's the difference between ID3, C4.5, and CART?</div>
+    <div class="a">ID3: only discrete attributes, uses Information Gain, no pruning built-in. C4.5: handles continuous attributes and missing values, uses Gain Ratio, includes rule post-pruning. CART: builds binary trees only, uses the Gini Index (classification) or variance reduction (regression), supports both classification and regression.</div>
+    <div class="q">Q3. Why is entropy maximum at p = 0.5 for two classes?</div>
+    <div class="a">Because that is the point of maximum uncertainty — you have the least ability to predict the class of a random example, so the most bits are needed, on average, to encode/communicate the outcome.</div>
+    <div class="q">Q4. Is ID3 guaranteed to find the smallest possible decision tree?</div>
+    <div class="a">No — ID3 performs a greedy, hill-climbing search with no backtracking, so it can converge to a locally optimal tree rather than the globally smallest one consistent with the data.</div>
+    <div class="q">Q5. What happens if Attributes is empty but examples are still mixed?</div>
+    <div class="a">A leaf is created and labelled with the majority (most common) target class among the remaining examples — this is a form of "tie-breaking" / noise handling.</div>
+    <div class="q">Q6. Why do we need Gain Ratio instead of just Information Gain?</div>
+    <div class="a">Plain Gain is biased toward high-cardinality attributes (like unique IDs) which trivially create pure but useless splits. Gain Ratio normalises Gain by SplitInformation to remove this bias.</div>
+    <div class="q">Q7. What is the difference between pre-pruning and post-pruning?</div>
+    <div class="a">Pre-pruning stops tree growth early using a stopping condition (faster, but risk of stopping too soon — "horizon effect"). Post-pruning grows the full tree and then removes branches that don't help validation accuracy — usually gives better trees, at higher computational cost.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!-- PART B : INSTANCE-BASED LEARNING                              -->
+  <!-- ============================================================ -->
+  <div class="ibl">
+  <div class="part-banner ibl"><span>📍</span> PART B — Instance-Based Learning <span class="badge">Lazy learners</span></div>
+
+  <h2 class="topic" id="b0">B0. What is Instance-Based Learning?</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  Instance-based learning methods simply <b>store</b> the training examples. Generalisation is postponed until a new query instance must be classified — at that point, the stored instances are examined to relate them to the new instance ("lazy" evaluation).
+  </div>
+  <ul>
+    <li>Also called <b>lazy learners</b>, as opposed to <b>eager learners</b> (e.g. decision trees, neural nets) which build an explicit generalised model at training time.</li>
+    <li>Includes: k-Nearest Neighbour, Locally Weighted Regression, Radial Basis Function networks (partially), Case-Based Reasoning.</li>
+  </ul>
+  <div class="compare">
+    <div class="cc"><h4>🐢 Lazy learner (e.g. k-NN)</h4>Little/no work at training time; all the work (search + computation) happens at query/classification time; can approximate the target function <b>locally</b> and differently for each query point.</div>
+    <div class="cc"><h4>🐇 Eager learner (e.g. Decision Tree)</h4>Builds one global approximation of the target function during training; classification of a query is then very fast, but the model may not fit local regions of the space as well.</div>
+  </div>
+  <div class="box warn"><span class="tag">Key disadvantage</span>
+  Cost of classifying a new instance can be high (must search/compare against many/all stored examples) and instance-based methods typically consider <b>all</b> attributes, so they are vulnerable to the <b>curse of dimensionality</b> — irrelevant attributes can dominate the distance computation.
+  </div>
+
+  <h2 class="topic" id="b1">B1. k-Nearest Neighbour Learning</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  The most basic instance-based method. It assumes all instances correspond to points in n-dimensional space ℝⁿ. To classify a new query instance, k-NN finds the <b>k</b> training examples nearest to it (usually by Euclidean distance) and assigns the <b>majority class</b> among them.
+  </div>
+  <div class="formula">
+  <span class="key">d(x<sub>i</sub>, x<sub>j</sub>)</span> <span class="op">=</span> √( Σ<sub>r=1</sub><sup>n</sup> (a<sub>r</sub>(x<sub>i</sub>) − a<sub>r</sub>(x<sub>j</sub>))² )&nbsp;&nbsp;<span class="cm">// Euclidean distance over n attributes</span>
+  </div>
+  <div class="pseudocode">
+<span class="kw">function</span> <span class="fn">k-NN</span>(TrainingSet, query x_q, k):
+  <span class="kw">for each</span> training example x_i:
+      compute distance d(x_i, x_q)
+  select the k examples with smallest distance
+  <span class="kw">return</span> the class that is the majority among those k neighbours
+  </div>
+  <ul>
+    <li><b>Distance-weighted k-NN</b>: give each neighbour a vote weighted by 1/d² (closer neighbours count more) — reduces sensitivity to the exact choice of k, and even allows k = "all training examples" (a global weighted vote, called <b>Shepard's method</b>).</li>
+    <li>k-NN can also do <b>regression</b> — instead of majority voting, average (or weighted-average) the target values of the k neighbours.</li>
+    <li>The decision boundary formed by 1-NN is a <b>Voronoi diagram</b> partitioning the space around each stored point.</li>
+  </ul>
+
+  <div class="box interview"><span class="tag">Interview angle</span>
+  <b>Curse of dimensionality</b>: as the number of irrelevant attributes grows, distances become dominated by noise from those irrelevant dimensions, and the "nearest" neighbours stop being meaningfully similar. Fix: attribute weighting, or feature selection before applying k-NN. Also — always <b>normalise/scale</b> features before computing distance, or attributes with larger numeric ranges will dominate.
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Classification with k = 3</div>
+    <div class="num-body">
+      <table>
+        <tr><th>Point</th><th>x1</th><th>x2</th><th>Class</th></tr>
+        <tr><td>A</td><td>2</td><td>4</td><td>Red</td></tr>
+        <tr><td>B</td><td>4</td><td>6</td><td>Blue</td></tr>
+        <tr><td>C</td><td>4</td><td>2</td><td>Red</td></tr>
+        <tr><td>D</td><td>6</td><td>4</td><td>Blue</td></tr>
+        <tr><td>E</td><td>6</td><td>2</td><td>Red</td></tr>
+        <tr><td>F</td><td>2</td><td>2</td><td>Blue</td></tr>
+      </table>
+      <p>Query point Q = (5, 3). Classify using k = 3.</p>
+      <div class="step"><div class="step-title">Step 1: Compute Euclidean distance of Q from every point</div>
+      d(Q,A)=√(9+1)=3.162 &nbsp; d(Q,B)=√(1+9)=3.162 &nbsp; d(Q,C)=√(1+1)=1.414<br>
+      d(Q,D)=√(1+1)=1.414 &nbsp; d(Q,E)=√(1+1)=1.414 &nbsp; d(Q,F)=√(9+1)=3.162</div>
+      <div class="step"><div class="step-title">Step 2: Pick the 3 smallest distances</div>C (Red, 1.414), D (Blue, 1.414), E (Red, 1.414) — a 3-way tie, all closer than the rest.</div>
+      <div class="step"><div class="step-title">Step 3: Majority vote among {C, D, E}</div>Red: C, E (2 votes) &nbsp; Blue: D (1 vote)</div>
+      <div class="result-box">Q = (5,3) is classified as <b>Red</b> (2 out of 3 nearest neighbours are Red).</div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — k-NN Regression (plain average vs. distance-weighted)</div>
+    <div class="num-body">
+      <table>
+        <tr><th>Study hours (x)</th><th>2</th><th>4</th><th>6</th><th>8</th><th>11</th></tr>
+        <tr><th>Marks (y)</th><td>50</td><td>58</td><td>65</td><td>72</td><td>90</td></tr>
+      </table>
+      <p>Predict marks for x = 7 using k = 3 nearest neighbours (by |x−7|).</p>
+      <div class="step"><div class="step-title">Step 1: Distances along x</div>
+      |2−7|=5, |4−7|=3, |6−7|=1, |8−7|=1, |11−7|=4 → 3 nearest: x=6 (d=1,y=65), x=8 (d=1,y=72), x=4 (d=3,y=58)</div>
+      <div class="step"><div class="step-title">Step 2a: Plain average k-NN prediction</div>ŷ = (65+72+58)/3 = 195/3 = <b>65</b></div>
+      <div class="step"><div class="step-title">Step 2b: Distance-weighted prediction, weight = 1/d²</div>
+      w<sub>6</sub>=1/1²=1, w<sub>8</sub>=1/1²=1, w<sub>4</sub>=1/3²=0.111<br>
+      Weighted sum = 1(65)+1(72)+0.111(58) = 65+72+6.44 = 143.44<br>
+      Sum of weights = 1+1+0.111 = 2.111</div>
+      <div class="result-box">Distance-weighted ŷ = 143.44 / 2.111 = <b>67.95</b> — pulled toward the two closest points (6,8), unlike the plain average (65) which weighted x=4 equally.</div>
+    </div>
+  </div>
+
+  <h2 class="topic" id="b2">B2. Locally Weighted Regression (LWR)</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  LWR is a generalisation of k-NN regression. Instead of using only the k nearest neighbours with equal weight, it uses <b>all</b> (or nearby) training points, each weighted by a <b>kernel function</b> of its distance to the query point — nearby points get high weight, far points get near-zero weight — and fits a local model (often a simple weighted average, or a local linear regression) around the query.
+  </div>
+  <div class="formula">
+  <span class="key">w<sub>i</sub></span> <span class="op">=</span> K(d(x<sub>q</sub>, x<sub>i</sub>)) &nbsp;=&nbsp; exp( −d(x<sub>q</sub>,x<sub>i</sub>)² / (2σ²) )&nbsp;&nbsp;<span class="cm">// Gaussian kernel, bandwidth σ</span><br>
+  <span class="key">ŷ(x<sub>q</sub>)</span> <span class="op">=</span> Σ w<sub>i</sub> y<sub>i</sub> / Σ w<sub>i</sub>&nbsp;&nbsp;<span class="cm">// locally weighted average (order-0 fit)</span>
+  </div>
+  <ul>
+    <li>The full "locally weighted <b>linear</b> regression" fits a local straight line (minimising Σw<sub>i</sub>(y<sub>i</sub> − w<sub>0</sub> − w<sub>1</sub>x<sub>i</sub>)²) around x<sub>q</sub>, rather than only a weighted average — more accurate but more computation.</li>
+    <li><b>σ (bandwidth)</b> controls the "locality": small σ → very local, wiggly fit (risk of overfitting); large σ → smoother, more global fit (risk of underfitting) — directly analogous to the role of k in k-NN.</li>
+    <li>Like k-NN, LWR is <b>lazy</b>: the local model is only built when a query arrives.</li>
+  </ul>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Locally weighted average using a Gaussian kernel (σ = 2)</div>
+    <div class="num-body">
+      <p>Same dataset as B1 Numerical 2: (2,50) (4,58) (6,65) (8,72) (11,90). Query x<sub>q</sub> = 7.</p>
+      <div class="step"><div class="step-title">Step 1: Distance and squared distance from x_q</div>
+      d = −5,−3,−1,1,4 → d² = 25, 9, 1, 1, 16</div>
+      <div class="step"><div class="step-title">Step 2: Gaussian weights, w = exp(−d²/(2×4)) = exp(−d²/8)</div>
+      w₁=exp(−3.125)=0.044, w₂=exp(−1.125)=0.325, w₃=exp(−0.125)=0.883, w₄=exp(−0.125)=0.883, w₅=exp(−2)=0.135</div>
+      <div class="step"><div class="step-title">Step 3: Weighted sum of y and weighted average</div>
+      Σw<sub>i</sub>y<sub>i</sub> = 0.044(50)+0.325(58)+0.883(65)+0.883(72)+0.135(90) = 2.2+18.83+57.36+63.54+12.18 = 154.11<br>
+      Σw<sub>i</sub> = 0.044+0.325+0.883+0.883+0.135 = 2.269</div>
+      <div class="result-box">ŷ(7) = 154.11 / 2.269 = <b>67.92</b> — very close to the distance-weighted k-NN answer (67.95), but computed using ALL 5 points, not just 3.</div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — Effect of bandwidth σ (narrower kernel, σ = 1)</div>
+    <div class="num-body">
+      <p>Same data and query (x<sub>q</sub>=7), but now σ = 1, so w = exp(−d²/2).</p>
+      <div class="step"><div class="step-title">Step 1: Weights</div>
+      w₁=exp(−12.5)≈0.000, w₂=exp(−4.5)=0.011, w₃=exp(−0.5)=0.607, w₄=exp(−0.5)=0.607, w₅=exp(−8)≈0.000</div>
+      <div class="step"><div class="step-title">Step 2: Weighted sum and total weight</div>
+      Σw<sub>i</sub>y<sub>i</sub> ≈ 0.011(58)+0.607(65)+0.607(72) = 0.64+39.42+43.70 = 83.76<br>
+      Σw<sub>i</sub> ≈ 0.011+0.607+0.607 = 1.225</div>
+      <div class="result-box">ŷ(7) = 83.76 / 1.225 = <b>68.4</b> — with a narrower kernel, distant points (x=2, x=11) are essentially ignored, so the prediction converges toward the simple average of the two closest points ((65+72)/2 = 68.5). <b>Smaller σ → more local, more variance; larger σ → more global, more bias.</b></div>
+    </div>
+  </div>
+
+  <h2 class="topic" id="b3">B3. Radial Basis Function (RBF) Networks</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  An RBF network is a type of artificial neural network that uses radial basis functions (typically Gaussians) as activation functions in a single hidden layer. It combines instance-based learning (the hidden units are centred at, or near, training instances) with global approximation (a linear output layer).
+  </div>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" style="max-width:420px;">
+      <circle cx="60" cy="60" r="20" fill="#9333ea"/><text x="60" y="65" text-anchor="middle" fill="#fff" font-size="12" font-family="Sora">x1</text>
+      <circle cx="60" cy="160" r="20" fill="#9333ea"/><text x="60" y="165" text-anchor="middle" fill="#fff" font-size="12" font-family="Sora">x2</text>
+      <circle cx="220" cy="40" r="22" fill="#0d9488"/><text x="220" y="45" text-anchor="middle" fill="#fff" font-size="11" font-family="Sora">φ1</text>
+      <circle cx="220" cy="110" r="22" fill="#0d9488"/><text x="220" y="115" text-anchor="middle" fill="#fff" font-size="11" font-family="Sora">φ2</text>
+      <circle cx="220" cy="180" r="22" fill="#0d9488"/><text x="220" y="185" text-anchor="middle" fill="#fff" font-size="11" font-family="Sora">φ3</text>
+      <circle cx="380" cy="110" r="24" fill="#e11d48"/><text x="380" y="115" text-anchor="middle" fill="#fff" font-size="12" font-family="Sora">y</text>
+      <g stroke="#c4c9d8" stroke-width="1.4">
+        <line x1="80" y1="60" x2="198" y2="40"/><line x1="80" y1="60" x2="198" y2="110"/><line x1="80" y1="60" x2="198" y2="180"/>
+        <line x1="80" y1="160" x2="198" y2="40"/><line x1="80" y1="160" x2="198" y2="110"/><line x1="80" y1="160" x2="198" y2="180"/>
+        <line x1="242" y1="40" x2="356" y2="110"/><line x1="242" y1="110" x2="356" y2="110"/><line x1="242" y1="180" x2="356" y2="110"/>
+      </g>
+      <text x="55" y="20" font-family="Inter" font-size="11" fill="#5b6478">Input</text>
+      <text x="195" y="215" font-family="Inter" font-size="11" fill="#5b6478">Hidden (Gaussian/RBF units, centres c_i)</text>
+      <text x="370" y="150" font-family="Inter" font-size="11" fill="#5b6478">Output (linear)</text>
+    </svg>
+    <div class="caption">Fig B3.1 — RBF network: inputs → Gaussian hidden units centred at prototypes c<sub>i</sub> → linearly combined output.</div>
+  </div>
+
+  <div class="formula">
+  <span class="key">φ<sub>i</sub>(x)</span> <span class="op">=</span> exp( −‖x − c<sub>i</sub>‖² / (2σ<sub>i</sub>²) )&nbsp;&nbsp;<span class="cm">// hidden unit i, centre c_i, width σ_i</span><br>
+  <span class="key">f(x)</span> <span class="op">=</span> w<sub>0</sub> + Σ<sub>i=1</sub><sup>k</sup> w<sub>i</sub> φ<sub>i</sub>(x)&nbsp;&nbsp;<span class="cm">// output = linear combination of hidden activations</span>
+  </div>
+
+  <h4 class="subsub">Training an RBF network (two-stage, faster than backprop)</h4>
+  <ol>
+    <li><b>Choose the centres c<sub>i</sub></b> — either use all/some training instances directly, or cluster the inputs (e.g. k-means) and use cluster centroids.</li>
+    <li><b>Choose widths σ<sub>i</sub></b> — often fixed (e.g. based on distance to nearest centres).</li>
+    <li><b>Solve for output weights w<sub>i</sub></b> — since the output layer is linear, this reduces to a simple (global) least-squares linear regression problem over the hidden-layer outputs.</li>
+  </ol>
+  <div class="box interview"><span class="tag">Interview angle</span>
+  RBF networks are a nice bridge topic: they are <b>instance-based</b> (centres are training points / local Gaussian "receptive fields", like k-NN) but also <b>eager/global</b> (a trained set of weights is used for every future query, unlike pure lazy k-NN). Compared to standard backprop MLPs, RBF networks usually train <b>much faster</b> since only the output layer needs iterative/least-squares fitting.
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 1 — Forward pass with 2 centres (1-D input)</div>
+    <div class="num-body">
+      <p>Centres: c₁=2, c₂=8, σ=2 for both. Trained weights: w₀=1, w₁=3, w₂=2. Compute output for input x=5.</p>
+      <div class="step"><div class="step-title">Step 1: Hidden activations</div>
+      φ₁ = exp(−(5−2)²/(2×2²)) = exp(−9/8) = exp(−1.125) = <b>0.3247</b><br>
+      φ₂ = exp(−(5−8)²/8) = exp(−9/8) = <b>0.3247</b> (x is symmetric between the two centres)</div>
+      <div class="step"><div class="step-title">Step 2: Output layer (linear combination)</div>
+      f(x) = w₀ + w₁φ₁ + w₂φ₂ = 1 + 3(0.3247) + 2(0.3247) = 1 + 0.974 + 0.649</div>
+      <div class="result-box">f(5) = <b>2.624</b></div>
+    </div>
+  </div>
+
+  <div class="numerical">
+    <div class="num-head">✅ Numerical 2 — Forward pass with 2 centres (2-D input)</div>
+    <div class="num-body">
+      <p>Centres: C₁=(1,1), C₂=(4,4), σ=2 for both. Weights: w₀=0.5, w₁=2, w₂=1.5. Query x=(2,3).</p>
+      <div class="step"><div class="step-title">Step 1: Squared distances</div>
+      ‖x−C₁‖² = (2−1)²+(3−1)² = 1+4 = 5<br>
+      ‖x−C₂‖² = (2−4)²+(3−4)² = 4+1 = 5 (again equidistant from both centres)</div>
+      <div class="step"><div class="step-title">Step 2: Hidden activations</div>
+      φ₁ = exp(−5/8) = exp(−0.625) = <b>0.5353</b> &nbsp;&nbsp; φ₂ = exp(−5/8) = <b>0.5353</b></div>
+      <div class="step"><div class="step-title">Step 3: Output</div>
+      f(x) = 0.5 + 2(0.5353) + 1.5(0.5353) = 0.5 + 1.071 + 0.803</div>
+      <div class="result-box">f(2,3) = <b>2.374</b></div>
+    </div>
+  </div>
+
+  <h2 class="topic" id="b4">B4. Case-Based Learning (Case-Based Reasoning, CBR)</h2>
+  <div class="box def"><span class="tag">Definition</span>
+  Case-Based Reasoning is an instance-based learning method where instances ("cases") are represented using rich, structured (often symbolic) descriptions instead of just points in ℝⁿ, and where the retrieval/matching process can involve more elaborate, knowledge-based similarity and adaptation methods rather than a simple Euclidean distance.
+  </div>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 380 300" xmlns="http://www.w3.org/2000/svg" style="max-width:300px;">
+      <circle cx="190" cy="150" r="150" fill="none" stroke="#e4e8f4" stroke-width="1"/>
+      <circle cx="190" cy="50" r="46" fill="#9333ea"/><text x="190" y="46" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">RETRIEVE</text><text x="190" y="62" text-anchor="middle" fill="#fff" font-size="10">similar cases</text>
+      <circle cx="320" cy="150" r="46" fill="#0d9488"/><text x="320" y="146" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">REUSE</text><text x="320" y="162" text-anchor="middle" fill="#fff" font-size="10">apply solution</text>
+      <circle cx="190" cy="250" r="46" fill="#d97706"/><text x="190" y="246" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">REVISE</text><text x="190" y="262" text-anchor="middle" fill="#fff" font-size="10">adapt / repair</text>
+      <circle cx="60" cy="150" r="46" fill="#e11d48"/><text x="60" y="146" text-anchor="middle" fill="#fff" font-family="Sora" font-size="13">RETAIN</text><text x="60" y="162" text-anchor="middle" fill="#fff" font-size="10">store new case</text>
+      <path d="M225,75 A150,150 0 0,1 300,115" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+      <path d="M300,185 A150,150 0 0,1 225,225" fill="none" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M155,225 A150,150 0 0,1 80,185" fill="none" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M80,115 A150,150 0 0,1 155,75" fill="none" stroke="#94a3b8" stroke-width="2"/>
+    </svg>
+    <div class="caption">Fig B4.1 — The CBR cycle: the "Four R's" — Retrieve, Reuse, Revise, Retain.</div>
+  </div>
+
+  <h4 class="subsub">The Four R's of the CBR cycle</h4>
+  <ul>
+    <li><b>Retrieve</b> — given a new problem, find the most similar case(s) from the case library.</li>
+    <li><b>Reuse</b> — map/adapt the solution from the retrieved case(s) to the new problem.</li>
+    <li><b>Revise</b> — test the proposed solution in the real world (or simulation) and repair it if it fails.</li>
+    <li><b>Retain</b> — store the new, validated case (problem + solution) for future reuse — this is how CBR systems "learn" incrementally over time.</li>
+  </ul>
+
+  <h4 class="subsub">How CBR differs from plain k-NN</h4>
+  <table>
+    <tr><th class="left">Aspect</th><th class="left">k-NN</th><th class="left">Case-Based Reasoning</th></tr>
+    <tr><td class="left">Case representation</td><td class="left">Numeric feature vector</td><td class="left">Rich symbolic/structured description (graphs, rules, relations)</td></tr>
+    <tr><td class="left">Similarity</td><td class="left">Simple metric (Euclidean, etc.)</td><td class="left">Complex, possibly knowledge-guided similarity</td></tr>
+    <tr><td class="left">Use of retrieved case</td><td class="left">Direct averaging/voting</td><td class="left">Explicit adaptation/reasoning step ("Reuse"/"Revise")</td></tr>
+  </table>
+  <ul>
+    <li><b>Applications</b>: legal reasoning (precedent-based judgments), medical diagnosis support systems, help-desk / customer-support systems, mechanical/engineering design (e.g. the classic CADET system for conceptual design reuse), and recommendation systems.</li>
+  </ul>
+
+  <h2 class="topic" id="b5">B5. Interview Questions — Instance-Based Learning</h2>
+  <div class="faq">
+    <div class="q">Q1. Why is k-NN called a "lazy" learner?</div>
+    <div class="a">Because it does no explicit training/model-building step — it just stores the training data, and defers all computation (distance calculation, voting) to the moment a query needs to be classified.</div>
+    <div class="q">Q2. What is the time complexity of classifying one query with basic k-NN?</div>
+    <div class="a">O(n·d) to compute distances to all n training points across d features, plus O(n log k) or O(nk) to find the k smallest — much more expensive at prediction time than eager learners like decision trees.</div>
+    <div class="q">Q3. How do you choose a good value of k?</div>
+    <div class="a">Too small k (e.g. 1) is sensitive to noise/outliers (high variance); too large k over-smooths and can include points from other classes (high bias). Typically chosen via cross-validation; an odd k is preferred for binary classification to avoid ties.</div>
+    <div class="q">Q4. How does Locally Weighted Regression relate to k-NN?</div>
+    <div class="a">LWR generalises k-NN regression: instead of a hard cutoff at k neighbours with equal weight, it uses a smooth kernel function (e.g. Gaussian) to softly weight ALL points by distance — so it's a smoother, more principled version of the same "local averaging" idea.</div>
+    <div class="q">Q5. Why do RBF networks train faster than standard backpropagation MLPs?</div>
+    <div class="a">Because once the hidden-layer centres and widths are fixed (via clustering or heuristics), computing the output-layer weights reduces to solving a single linear least-squares problem, instead of iterative gradient descent through multiple non-linear layers.</div>
+    <div class="q">Q6. What is the curse of dimensionality, and why does it hurt instance-based methods specifically?</div>
+    <div class="a">As dimensionality grows, all points tend to become nearly equidistant from each other, and irrelevant attributes add noise to the distance measure — since instance-based methods rely directly on distance in the full feature space, their notion of "similarity"/"nearness" becomes unreliable.</div>
+    <div class="q">Q7. When would you prefer Case-Based Reasoning over k-NN?</div>
+    <div class="a">When cases are naturally structured/symbolic (not simple numeric vectors) and solutions need explicit adaptation logic rather than pure averaging — e.g. legal precedent reasoning, engineering-design reuse, or diagnosis systems requiring a "repair" step after retrieval.</div>
+  </div>
+
+  </div><!-- /.ibl -->
+
+  <div class="footer-note">— End of notes · Good luck with your exams and interviews! —</div>
+</div>
+</body>
+</html>
